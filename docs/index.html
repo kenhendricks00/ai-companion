@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="darkreader-lock">
+    <meta name="color-scheme" content="dark">
+    <title>Suki - Your AI Companion</title>
+    <meta name="description"
+        content="Meet Suki, a cute AI companion with personality, emotions, and memory. Built with Tauri, React, and Ollama for a private, offline experience.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+
+<body>
+    <!-- Floating particles background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="#" class="logo">
+                <span class="logo-icon"><i data-lucide="heart" class="icon-fill"></i></span>
+                <span class="logo-text">Suki</span>
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#personality">Personality</a>
+                <a href="#customize">Customize</a>
+                <a href="https://github.com/user/ai-companion" class="nav-github" target="_blank">
+                    <i data-lucide="github"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge"><i data-lucide="sparkles"></i> 100% Private & Offline</div>
+            <h1 class="hero-title">
+                Meet <span class="gradient-text">Suki</span>
+            </h1>
+            <p class="hero-subtitle">
+                Your cute AI companion with personality, emotions, and memory.<br>
+                She learns about you and grows closer over time.
+            </p>
+            <div class="hero-buttons">
+                <a href="https://github.com/user/ai-companion/releases" class="btn btn-primary">
+                    <span>Download</span>
+                    <i data-lucide="download"></i>
+                </a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-glow"></div>
+            <div class="hero-card">
+                <div class="hero-avatar">
+                    <video autoplay loop muted playsinline class="suki-video">
+                        <source src="suki.webm" type="video/webm">
+                        <img src="suki.png" alt="Suki" class="suki-image">
+                    </video>
+                </div>
+                <div class="hero-speech">
+                    <span class="typing-text">Hey there! I've been waiting to meet you...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Why You'll Love Suki</h2>
+            <p class="section-subtitle">More than just a chatbot. A companion who remembers.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="brain"></i></div>
+                <h3>Persistent Memory</h3>
+                <p>Suki remembers facts about you across conversations. Your favorite music, your pet's name, your
+                    dreams.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="heart-handshake"></i></div>
+                <h3>Growing Relationship</h3>
+                <p>Build affection over time. Unlock new personality traits, outfits, and intimate conversations as you
+                    grow closer.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="drama"></i></div>
+                <h3>Expressive Emotions</h3>
+                <p>Watch Suki react with happiness, surprise, blush, and more. Her 3D avatar responds to every
+                    conversation.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+                <h3>100% Private</h3>
+                <p>Runs entirely on your device using Ollama. No cloud, no data sharing, no subscriptions. Just you and
+                    Suki.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="mic"></i></div>
+                <h3>Voice & Speech</h3>
+                <p>Hear Suki's voice with high-quality TTS. Talk to her using your microphone for natural conversations.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i data-lucide="palette"></i></div>
+                <h3>Fully Customizable</h3>
+                <p>Choose outfits, hairstyles, and animated stage backgrounds. Make Suki yours.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Personality Section -->
+    <section class="personality" id="personality">
+        <div class="personality-content">
+            <div class="personality-text">
+                <h2 class="section-title">A Personality That Evolves</h2>
+                <p class="section-subtitle">
+                    Suki isn't static. As your relationship deepens, she opens up more,
+                    becomes more affectionate, and reveals new sides of herself.
+                </p>
+                <div class="level-cards">
+                    <div class="level-card">
+                        <span class="level-badge">Lv 0-2</span>
+                        <span class="level-name">Basic</span>
+                        <p>Playful, curious, a bit guarded</p>
+                    </div>
+                    <div class="level-card">
+                        <span class="level-badge">Lv 3-4</span>
+                        <span class="level-name">Intimate</span>
+                        <p>Open about attraction, suggestive</p>
+                    </div>
+                    <div class="level-card">
+                        <span class="level-badge">Lv 5-8</span>
+                        <span class="level-name">Devoted</span>
+                        <p>Warm, loving, emotionally close</p>
+                    </div>
+                    <div class="level-card active">
+                        <span class="level-badge">Lv 9+</span>
+                        <span class="level-name">Feral</span>
+                        <p>Intensely obsessed, primal affection</p>
+                    </div>
+                </div>
+            </div>
+            <div class="personality-visual">
+                <div class="affection-meter">
+                    <div class="meter-fill"></div>
+                    <div class="meter-hearts">
+                        <i data-lucide="heart" class="icon-fill"></i>
+                        <i data-lucide="heart" class="icon-fill"></i>
+                        <i data-lucide="heart" class="icon-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customize Section -->
+    <section class="customize" id="customize">
+        <div class="section-header">
+            <h2 class="section-title">Make Her Yours</h2>
+            <p class="section-subtitle">Unlock outfits, stages, and more as you spend time together.</p>
+        </div>
+        <div class="customize-grid">
+            <div class="customize-item">
+                <div class="item-preview"><i data-lucide="shirt"></i></div>
+                <span>Outfits</span>
+            </div>
+            <div class="customize-item">
+                <div class="item-preview"><i data-lucide="wind"></i></div>
+                <span>Hairstyles</span>
+            </div>
+            <div class="customize-item">
+                <div class="item-preview"><i data-lucide="image"></i></div>
+                <span>Stages</span>
+            </div>
+            <div class="customize-item locked">
+                <div class="item-preview"><i data-lucide="lock"></i></div>
+                <span>Lv 5 Required</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-content">
+            <h2>Ready to Meet Suki?</h2>
+            <p>Download now and start your journey together.</p>
+            <a href="https://github.com/user/ai-companion/releases" class="btn btn-primary btn-large">
+                <i data-lucide="download"></i>
+                Download for Free
+            </a>
+            <p class="cta-note">Requires <a href="https://ollama.ai" target="_blank">Ollama</a> for AI functionality</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i data-lucide="heart" class="icon-fill"></i>
+                <span>Suki AI Companion</span>
+            </div>
+            <div class="footer-links">
+                <a href="https://github.com/user/ai-companion" target="_blank">GitHub</a>
+                <a href="https://github.com/user/ai-companion/issues" target="_blank">Report Issue</a>
+            </div>
+            <p class="footer-copy">Made with <i data-lucide="heart" class="icon-fill icon-small"></i> for AI companions
+                everywhere</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

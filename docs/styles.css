@@ -1,0 +1,838 @@
+/* ============================================
+   Suki AI Companion - Landing Page Styles
+   ============================================ */
+
+:root {
+    --gothic-black: #020104;
+    --gothic-charcoal: #120516;
+    --gothic-purple: #350a3d;
+    --ani-primary: #ff6b9d;
+    --ani-glow: #ff9ff3;
+    --text-primary: #f5f0eb;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --text-muted: rgba(255, 255, 255, 0.5);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Lucide Icon Styling */
+[data-lucide] {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+.icon-fill {
+    fill: currentColor;
+    stroke: currentColor;
+}
+
+.icon-small {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-large {
+    width: 64px;
+    height: 64px;
+}
+
+/* Colored Icons */
+.icon-pink,
+.logo-icon [data-lucide="heart"],
+.hero-avatar [data-lucide],
+.meter-hearts [data-lucide],
+.footer-brand [data-lucide],
+.footer-copy [data-lucide] {
+    color: var(--ani-primary);
+}
+
+.feature-icon [data-lucide="brain"] {
+    color: #60a5fa;
+    /* Blue */
+}
+
+.feature-icon [data-lucide="heart-handshake"] {
+    color: #f472b6;
+    /* Pink */
+}
+
+.feature-icon [data-lucide="drama"] {
+    color: #fbbf24;
+    /* Amber */
+}
+
+.feature-icon [data-lucide="shield-check"] {
+    color: #34d399;
+    /* Emerald */
+}
+
+.feature-icon [data-lucide="mic"] {
+    color: #a78bfa;
+    /* Violet */
+}
+
+.feature-icon [data-lucide="palette"] {
+    color: #f97316;
+    /* Orange */
+}
+
+.customize-item .item-preview [data-lucide="shirt"] {
+    color: #f472b6;
+    /* Pink */
+}
+
+.customize-item .item-preview [data-lucide="wind"] {
+    color: #38bdf8;
+    /* Sky */
+}
+
+.customize-item .item-preview [data-lucide="image"] {
+    color: #a78bfa;
+    /* Violet */
+}
+
+.customize-item .item-preview [data-lucide="lock"] {
+    color: var(--text-muted);
+}
+
+.hero-badge [data-lucide="sparkles"] {
+    width: 16px;
+    height: 16px;
+    color: var(--ani-primary);
+}
+
+.feature-icon [data-lucide] {
+    width: 40px;
+    height: 40px;
+}
+
+.item-preview [data-lucide] {
+    width: 48px;
+    height: 48px;
+}
+
+.meter-hearts {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.meter-hearts [data-lucide] {
+    width: 28px;
+    height: 28px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gothic-black);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   Particles Background
+   ============================================ */
+
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--ani-primary);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 10s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: translateY(-100px) translateX(20px);
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   Navigation
+   ============================================ */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1rem 2rem;
+    background: rgba(2, 1, 4, 0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.logo-icon {
+    font-size: 1.5rem;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--ani-primary);
+}
+
+.nav-github {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.nav-github:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--ani-primary), #c44569);
+    color: white;
+    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(255, 107, 157, 0.6);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--ani-primary);
+}
+
+.btn-large {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.125rem;
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8rem 2rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 4rem;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 107, 157, 0.15);
+    border: 1px solid rgba(255, 107, 157, 0.3);
+    border-radius: 50px;
+    font-size: 0.875rem;
+    color: var(--ani-primary);
+    margin-bottom: 1.5rem;
+}
+
+.hero-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--ani-primary), var(--ani-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.hero-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 107, 157, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+}
+
+.hero-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-avatar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.suki-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 24px;
+    border: 2px solid rgba(255, 107, 157, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3);
+    transition: all 0.3s ease;
+}
+
+.suki-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(255, 107, 157, 0.5);
+}
+
+.suki-video {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 24px;
+    border: 2px solid rgba(255, 107, 157, 0.3);
+    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3);
+    transition: all 0.3s ease;
+}
+
+.suki-video:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(255, 107, 157, 0.5);
+}
+
+.hero-speech {
+
+
+    background: rgba(255, 107, 157, 0.1);
+    border: 1px solid rgba(255, 107, 157, 0.2);
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.typing-text {
+    display: inline-block;
+}
+
+/* ============================================
+   Sections Common
+   ============================================ */
+
+section {
+    padding: 6rem 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.section-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 4rem;
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   Features Section
+   ============================================ */
+
+.features {
+    background: linear-gradient(180deg, transparent 0%, rgba(53, 10, 61, 0.2) 50%, transparent 100%);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 107, 157, 0.3);
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ============================================
+   Personality Section
+   ============================================ */
+
+.personality {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.personality-content {
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+}
+
+.personality-text {
+    flex: 1;
+}
+
+.personality-text .section-title {
+    text-align: left;
+}
+
+.personality-text .section-subtitle {
+    text-align: left;
+    margin-bottom: 2rem;
+}
+
+.level-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.level-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.level-card.active {
+    background: rgba(255, 107, 157, 0.1);
+    border-color: rgba(255, 107, 157, 0.3);
+}
+
+.level-badge {
+    background: var(--ani-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.level-name {
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.level-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.personality-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.affection-meter {
+    width: 200px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    position: relative;
+    overflow: hidden;
+}
+
+.meter-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70%;
+    background: linear-gradient(180deg, var(--ani-primary), #c44569);
+    border-radius: 0 0 100px 100px;
+    animation: meterPulse 2s ease-in-out infinite;
+}
+
+@keyframes meterPulse {
+
+    0%,
+    100% {
+        height: 65%;
+    }
+
+    50% {
+        height: 75%;
+    }
+}
+
+.meter-hearts {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+}
+
+/* ============================================
+   Customize Section
+   ============================================ */
+
+.customize {
+    background: linear-gradient(180deg, transparent 0%, rgba(53, 10, 61, 0.15) 100%);
+}
+
+.customize-grid {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.customize-item {
+    width: 150px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.customize-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--ani-primary);
+}
+
+.customize-item.locked {
+    opacity: 0.5;
+}
+
+.item-preview {
+    font-size: 3rem;
+}
+
+.customize-item span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   CTA Section
+   ============================================ */
+
+.cta {
+    text-align: center;
+    padding: 8rem 2rem;
+}
+
+.cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cta h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.cta p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+}
+
+.cta-note {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 1.5rem;
+}
+
+.cta-note a {
+    color: var(--ani-primary);
+    text-decoration: none;
+}
+
+.cta-note a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 3rem 2rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--ani-primary);
+}
+
+.footer-copy {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (max-width: 900px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 6rem;
+    }
+
+    .hero-title {
+        font-size: 2.75rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-visual {
+        width: 100%;
+    }
+
+    .personality-content {
+        flex-direction: column;
+    }
+
+    .personality-text .section-title,
+    .personality-text .section-subtitle {
+        text-align: center;
+    }
+
+    .nav-links a:not(.nav-github) {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero-title {
+        font-size: 2.25rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .customize-grid {
+        gap: 1rem;
+    }
+
+    .customize-item {
+        width: 120px;
+        height: 150px;
+    }
+}
