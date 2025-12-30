@@ -6,7 +6,12 @@
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-orange)
 
+<p align="center">
+  <img src="docs/header.png" alt="Suki AI Companion Screenshot" width="800">
+</p>
+
 ## ✨ Features
+
 
 ### 🧠 Persistent Memory
 Suki remembers facts about you across conversations. Your favorite music, your pet's name, your dreams — she'll recall them all.
