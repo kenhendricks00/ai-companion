@@ -12,11 +12,21 @@ export interface Message {
     emotion?: Emotion;
 }
 
+export interface ChatMessage {
+    role: Role;
+    content: string;
+}
+
+export interface OllamaStatus {
+    connected: boolean;
+    error: string | null;
+}
+
 // -----------------------------------------------------------------------------
 // AI Characteristics
 // -----------------------------------------------------------------------------
 
-export type Emotion = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' | 'love' | 'blush' | 'pout' | 'excited';
+export type Emotion = 'neutral' | 'happy' | 'sad' | 'surprised' | 'thinking' | 'love' | 'blush' | 'pout' | 'excited' | 'angry';
 
 export interface EmotionTrigger {
     emotion: Emotion;
@@ -38,13 +48,7 @@ export const EMOTION_TRIGGERS: EmotionTrigger[] = [
 // VRM & LipSync Types
 // -----------------------------------------------------------------------------
 
-export enum Viseme {
-    A = 'A',
-    I = 'I',
-    U = 'U',
-    E = 'E',
-    O = 'O',
-}
+export type Viseme = 'aa' | 'ee' | 'ih' | 'oh' | 'ou' | 'sil';
 
 export type MouthWeights = Record<string, number>;
 
@@ -57,7 +61,7 @@ export interface LipSyncData {
 // Animation Triggers
 // -----------------------------------------------------------------------------
 
-export type TriggeredAnimation = 'wave' | 'spin' | 'nod' | 'shake' | 'think' | 'excited' | 'dance' | null;
+export type TriggeredAnimation = 'wave' | 'spin' | 'twirl' | 'nod' | 'shake' | 'think' | 'excited' | 'dance' | 'jump' | 'bow' | 'blowkiss' | 'hairflip' | 'pout' | 'wink' | 'blush' | 'surprise' | null;
 
 const ANIMATION_KEYWORDS: Record<string, TriggeredAnimation> = {
     'wave': 'wave',
