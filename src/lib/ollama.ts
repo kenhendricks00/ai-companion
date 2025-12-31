@@ -44,51 +44,71 @@ export async function chatWithOllama(
 export async function* streamChatWithOllama(
     model: string,
     messages: ChatMessage[],
-    systemPrompt?: string
+    systemPrompt?: string,
+    options?: Record<string, any>
 ): AsyncGenerator<string, void, unknown> {
     const allMessages = systemPrompt
         ? [{ role: 'system', content: systemPrompt }, ...messages]
         : messages;
 
-    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model,
-            messages: allMessages.map(m => ({ role: m.role, content: m.content })),
-            stream: true,
-        }),
-    });
+    const requestBody = {
+        model,
+        messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+        stream: true,
+        options // Pass options including stop tokens
+    };
 
-    if (!response.ok) {
-        throw new Error(`Ollama error: ${response.status}`);
-    }
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error('No response body');
+    try {
+        const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+        });
 
-    const decoder = new TextDecoder();
-    let buffer = '';
+        clearTimeout(timeoutId);
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        if (!response.ok) {
+            throw new Error(`Ollama error: ${response.status} ${response.statusText}`);
+        }
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('No response body');
 
-        for (const line of lines) {
-            if (line.trim()) {
-                try {
-                    const json = JSON.parse(line);
-                    if (json.message?.content) {
-                        yield json.message.content;
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.trim()) {
+                    try {
+                        const json = JSON.parse(line);
+                        if (json.message?.content) {
+                            yield json.message.content;
+                        }
+                    } catch (e) {
+                        // Skip invalid JSON
                     }
-                } catch (e) {
-                    // Skip invalid JSON
                 }
             }
         }
+    } catch (error: any) {
+        if (error.name === 'AbortError') {
+            throw new Error('Ollama request timed out (60s)');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
     }
 }

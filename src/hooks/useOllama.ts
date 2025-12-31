@@ -37,7 +37,11 @@ export function useOllama() {
         let fullResponse = '';
 
         try {
-            const stream = streamChatWithOllama(currentModel, messages, systemPrompt);
+            const options = {
+                stop: ['User:', 'System:', 'User\'s Name:', 'Suki:', '\n\nUser']
+            };
+
+            const stream = streamChatWithOllama(currentModel, messages, systemPrompt, options);
 
             for await (const chunk of stream) {
                 fullResponse += chunk;

@@ -2,41 +2,28 @@ import { useState, useEffect, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { AffectionData, getAffectionLevelKey, AFFECTION_LEVELS, calculateLevel, AFFECTION_CONFIG } from '../types';
 
-export function useAffection() {
-    const [affection, setAffection] = useState<AffectionData>({
+export function useAffection(initialData?: AffectionData, onUpdate?: (data: AffectionData) => void) {
+    const [affection, setAffection] = useState<AffectionData>(initialData || {
         level: 0, // Treated as points
         total_messages: 0,
         last_interaction: '',
         first_interaction: '',
         days_spoken: 0,
     });
-    const [isLoading, setIsLoading] = useState(true);
 
-    // Load affection data from storage
-    const loadAffection = useCallback(async () => {
-        try {
-            const data = await invoke<AffectionData>('get_affection');
-            // Handle legacy data without first_interaction
-            if (!data.first_interaction && data.last_interaction) {
-                data.first_interaction = data.last_interaction;
-            }
-            setAffection(data);
-        } catch (error) {
-            console.error('Failed to load affection:', error);
-        } finally {
-            setIsLoading(false);
+    // Sync from props if they change (e.g. loaded from settings)
+    useEffect(() => {
+        if (initialData) {
+            setAffection(initialData);
         }
-    }, []);
+    }, [initialData]);
 
-    // Save affection data
-    const saveAffection = useCallback(async (data: AffectionData) => {
-        try {
-            await invoke('set_affection', { data });
-            setAffection(data);
-        } catch (error) {
-            console.error('Failed to save affection:', error);
+    const updateAffectionData = useCallback((newData: AffectionData) => {
+        setAffection(newData);
+        if (onUpdate) {
+            onUpdate(newData);
         }
-    }, []);
+    }, [onUpdate]);
 
     // Increase affection (called after each interaction)
     const increaseAffection = useCallback(async (amount: number = 10) => {
@@ -57,8 +44,8 @@ export function useAffection() {
             first_interaction: affection.first_interaction || nowStr,
             days_spoken: isNewDay ? (affection.days_spoken || 0) + 1 : (affection.days_spoken || 1),
         };
-        await saveAffection(newData);
-    }, [affection, saveAffection]);
+        updateAffectionData(newData);
+    }, [affection, updateAffectionData]);
 
     // Decrease affection (for negative interactions)
     const decreaseAffection = useCallback(async (amount: number = 10) => {
@@ -66,25 +53,24 @@ export function useAffection() {
             ...affection,
             level: Math.max(0, affection.level - amount),
             last_interaction: new Date().toISOString(),
+            first_interaction: affection.first_interaction,
+            total_messages: affection.total_messages,
+            days_spoken: affection.days_spoken
         };
-        await saveAffection(newData);
-    }, [affection, saveAffection]);
+        updateAffectionData(newData);
+    }, [affection, updateAffectionData]);
 
     // Reset affection
     const resetAffection = useCallback(async () => {
-        try {
-            await invoke('reset_affection');
-            setAffection({
-                level: 0,
-                total_messages: 0,
-                last_interaction: '',
-                first_interaction: '',
-                days_spoken: 0,
-            });
-        } catch (error) {
-            console.error('Failed to reset affection:', error);
-        }
-    }, []);
+        const resetData = {
+            level: 0,
+            total_messages: 0,
+            last_interaction: '',
+            first_interaction: '',
+            days_spoken: 0,
+        };
+        updateAffectionData(resetData);
+    }, [updateAffectionData]);
 
     // Get current level info
     const getCurrentLevelInfo = useCallback(() => {
@@ -101,7 +87,6 @@ export function useAffection() {
 
     return {
         affection,
-        isLoading,
         currentLevel,
         increaseAffection,
         decreaseAffection,

@@ -14,7 +14,7 @@ interface FloatingMenuProps {
     onToggleExpand: () => void;
 }
 
-export default function FloatingMenu({
+const FloatingMenu = React.memo(({
     streakCount,
     isVoiceEnabled,
     isExpanded,
@@ -25,7 +25,7 @@ export default function FloatingMenu({
     onSpeakerClick,
     onSettingsClick,
     onToggleExpand,
-}: FloatingMenuProps) {
+}: FloatingMenuProps) => {
     // Icon-only button for collapsed state
     const IconButton = ({ onClick, children, className = '' }: { onClick: () => void; children: React.ReactNode; className?: string }) => (
         <button
@@ -131,4 +131,6 @@ export default function FloatingMenu({
             </button>
         </div>
     );
-}
+});
+
+export default FloatingMenu;

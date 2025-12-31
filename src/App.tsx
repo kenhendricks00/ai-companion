@@ -19,7 +19,7 @@ import { useTTS } from './hooks/useTTS';
 import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { useStreak } from './hooks/useStreak';
 
-import { Message, Emotion, AppSettings, DEFAULT_SETTINGS, getSystemPrompt, Viseme, TriggeredAnimation, detectAnimationTrigger } from './types';
+import { Message, Emotion, AppSettings, DEFAULT_SETTINGS, getSystemPrompt, Viseme, TriggeredAnimation, detectAnimationTrigger, AffectionData } from './types';
 import { detectEmotion } from './lib/emotions';
 import { canvasRecorder } from './lib/canvasRecorder';
 import { kokoroService } from './lib/kokoro';
@@ -43,6 +43,7 @@ export default function App() {
     const [vrmUrl, setVrmUrl] = useState(SAMPLE_VRM_URL);
     const [vrmError, setVrmError] = useState<string | null>(null);
     const [triggeredAnimation, setTriggeredAnimation] = useState<TriggeredAnimation>(null);
+    const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
 
     // Customization state
     const [selectedOutfit, setSelectedOutfit] = useState('classic');
@@ -87,12 +88,23 @@ export default function App() {
         sendMessage: sendOllamaMessage
     } = useOllama();
 
+    const handleAffectionUpdate = useCallback((newData: AffectionData) => {
+        setSettings(prev => {
+            const newSettings = { ...prev, affectionData: newData };
+            // Fire and forget save
+            invoke('save_settings', { settings: newSettings }).catch(console.error);
+            return newSettings;
+        });
+    }, []);
+
     const {
         affection,
         increaseAffection,
         resetAffection,
         friendshipDays,
-    } = useAffection();
+        currentLevel,
+        getCurrentLevelInfo,
+    } = useAffection(settings.affectionData, handleAffectionUpdate);
 
     const {
         isPlaying: isSpeaking,
@@ -228,7 +240,7 @@ export default function App() {
         loadSettings();
     }, [setCurrentModel, setCurrentVoice]);
 
-    // Auto-send when listening stops
+    // Auto-send when listening stops (in voice mode)
     useEffect(() => {
         if (!isListening && transcript.trim() && !isLoading) {
             const timer = setTimeout(() => {
@@ -239,8 +251,34 @@ export default function App() {
         }
     }, [isListening, transcript, isLoading]);
 
+    // Keep listening active in voice mode (allow interrupts while Suki speaks)
+    useEffect(() => {
+        // Restart listening if voice mode is on and we're not currently listening
+        // Don't wait for isSpeaking - we want the mic hot so user can interrupt
+        if (voiceModeEnabled && !isListening && !isLoading && !transcript.trim()) {
+            // Small delay before restarting to avoid rapid restarts
+            const timer = setTimeout(() => {
+                if (voiceModeEnabled) {
+                    console.log('[App] Restarting listening for voice mode...');
+                    startListening();
+                }
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [voiceModeEnabled, isListening, isLoading, transcript, startListening]);
+
+    // Interrupt/barge-in: Stop Suki from speaking when user starts talking
+    useEffect(() => {
+        if (isListening && isSpeaking && (transcript.trim() || interimTranscript.trim())) {
+            console.log('[App] User interrupted, stopping TTS...');
+            stopSpeaking();
+            setCurrentSubtitle('');
+        }
+    }, [isListening, isSpeaking, transcript, interimTranscript, stopSpeaking]);
+
+
     // Save settings
-    const handleSaveSettings = async (newSettings: AppSettings) => {
+    const handleSaveSettings = useCallback(async (newSettings: AppSettings) => {
         try {
             await invoke('save_settings', { settings: newSettings });
             setSettings(newSettings);
@@ -255,7 +293,7 @@ export default function App() {
         } catch (e) {
             console.error('Failed to save settings:', e);
         }
-    };
+    }, []);
 
     // Handle sending a message
     const handleSendMessage = useCallback(async (content: string) => {
@@ -369,7 +407,27 @@ export default function App() {
                 // This removes [LIKE], [inquisitive], [happy], [spin], etc. from being spoken/shown
                 cleanResponse = cleanResponse
                     .replace(/\[.*?\]/g, '') // Remove anything in brackets
-                    .replace(/##\s+(Likes|Dislikes|Key Phrases)/gi, '') // Remove headers
+                    .replace(/##\s*Remembering User Fact.*$/gim, '') // Remove memory headers
+                    .replace(/##\s*(Likes|Dislikes|Key Phrases|Level \d+|Appearance|Personality|Behavior).*/gi, '') // Remove headers
+                    .replace(/\(Level \d+:?\s*\w*\)\s*[-–—]?\s*/gi, '') // Remove (Level X: Basic) patterns
+                    .replace(/[-–—]\s*\w+\s+(loves|has|likes|prefers)\/?.*$/gim, '') // Remove "- Kenneth loves/has..." lines
+                    .replace(/\*\*.*?\*\*/g, '') // Remove markdown bold
+                    .replace(/User's Name:\s*\w+/gi, '') // Remove "User's Name: Kenneth"
+                    .replace(/You (grew up|are|have|wear|like|dislike).{0,100}(town|fashion|dress|dog|nerd|cute|nerdy|animals|music|parties|arrogance)[^.]*\./gi, '') // Remove character descriptions
+                    .replace(/Your style is.{0,50}\./gi, '') // Remove style descriptions
+                    .replace(/If .* mentions a NEW fact about themselves.*$/gim, '') // Block full memory rule
+                    .replace(/Never save your own traits.*/gi, '') // Block partial memory rule
+                    .replace(/add .* at the end.*/gi, '') // Block prompt instruction leak
+                    .replace(/.*\[MEMORY: <fact>\].*/gi, '') // Block syntax leak
+                    .replace(/\[SYSTEM INSTRUCTIONS.*\]/gi, '') // Remove system header
+                    .replace(/\[END OF INSTRUCTIONS.*\]/gi, '') // Remove system footer
+                    .replace(/^User:?\s*/gim, '') // Remove "User:" prefix
+                    .replace(/^Suki:?\s*/gim, '') // Remove "Suki:" prefix
+                    .replace(/CRITICAL RULES.*$/gims, '') // Remove leaked instructions
+                    .replace(/SPEAKING STYLE.*$/gims, '') // Remove leaked instructions
+                    .replace(/YOUR PERSONALITY.*$/gims, '') // Remove leaked instructions
+                    .replace(/Time:\s*(Morning|Afternoon|Evening|Late night)/gi, '') // Remove time metadata
+                    .replace(/Mood:\s*.{0,100}/gi, '') // Remove mood metadata
                     .replace(/\s+/g, ' ') // Normalize whitespace
                     .trim();
 
@@ -457,35 +515,67 @@ export default function App() {
                 setMessages(prev => [...prev, errorMessage]);
             }
         );
-    }, [messages, affection.level, settings, sendOllamaMessage, increaseAffection, speak]);
+    }, [messages, affection.level, settings, sendOllamaMessage, increaseAffection, speak, handleSaveSettings]);
 
     // Clear chat history
-    const handleClearHistory = () => {
+    const handleClearHistory = useCallback(() => {
         setMessages([]);
         setCurrentResponse('');
         setCurrentEmotion('neutral');
         stopSpeaking();
         setCurrentSubtitle('');
-    };
+    }, [stopSpeaking]);
 
-    // Handle mic click
+    // Handle mic click - toggles voice mode on/off
     const handleMicClick = () => {
-        if (isListening) {
+        if (voiceModeEnabled) {
+            // Turn off voice mode
+            setVoiceModeEnabled(false);
             stopListening();
         } else {
+            // Turn on voice mode
+            setVoiceModeEnabled(true);
             resetTranscript();
             startListening();
         }
     };
 
     // Handle VRM load/error
-    const handleVRMLoad = () => setVrmError(null);
-    const handleVRMError = (error: string) => {
+    const handleVRMLoad = useCallback(() => setVrmError(null), []);
+    const handleVRMError = useCallback((error: string) => {
         setVrmError(error);
         if (vrmUrl !== SAMPLE_VRM_URL) {
             setVrmUrl(SAMPLE_VRM_URL);
         }
-    };
+    }, [vrmUrl]);
+
+    // Stable callbacks for FloatingMenu to prevent flickering
+    const handleStreaksClick = useCallback(() => setIsStreaksOpen(true), []);
+
+    const handleCaptureClick = useCallback(() => {
+        // Capture last 2 messages (user + assistant)
+        const lastTwo = messages.slice(-2)
+            .filter(m => m.role === 'user' || m.role === 'assistant') as { role: 'user' | 'assistant'; content: string; timestamp: Date }[];
+
+        if (lastTwo.length > 0) {
+            setLastCaptureInteraction(lastTwo);
+        }
+        setIsCaptureOpen(true);
+    }, [messages]);
+
+    const handleOutfitClick = useCallback(() => setIsCustomizationOpen(true), []);
+
+    // handleClearHistory is already defined, just need to make sure it's memoized if it isn't
+    const stableClearHistory = useCallback(handleClearHistory, [handleClearHistory]);
+
+    const handleSpeakerClick = useCallback(() => {
+        const newSettings = { ...settings, voice_enabled: !settings.voice_enabled };
+        handleSaveSettings(newSettings);
+    }, [settings, handleSaveSettings]);
+
+    const handleSettingsClick = useCallback(() => setIsSettingsOpen(true), []);
+
+    const handleToggleExpand = useCallback(() => setIsMenuExpanded(prev => !prev), []);
 
     return (
         <div className="h-screen w-screen overflow-hidden">
@@ -509,7 +599,7 @@ export default function App() {
                 <AffectionMeter
                     points={affection.level}
                     totalMessages={affection.total_messages}
-                    onClick={() => setIsStreaksOpen(true)}
+                    onClick={handleStreaksClick}
                 />
             </div>
 
@@ -548,25 +638,13 @@ export default function App() {
                 streakCount={currentStreak}
                 isVoiceEnabled={settings.voice_enabled}
                 isExpanded={isMenuExpanded}
-                onStreaksClick={() => setIsStreaksOpen(true)}
-                onCaptureClick={() => {
-                    // Capture last 2 messages (user + assistant)
-                    const lastTwo = messages.slice(-2)
-                        .filter(m => m.role === 'user' || m.role === 'assistant') as { role: 'user' | 'assistant'; content: string; timestamp: Date }[];
-
-                    if (lastTwo.length > 0) {
-                        setLastCaptureInteraction(lastTwo);
-                    }
-                    setIsCaptureOpen(true);
-                }}
-                onOutfitClick={() => setIsCustomizationOpen(true)}
-                onEraseClick={handleClearHistory}
-                onSpeakerClick={() => {
-                    const newSettings = { ...settings, voice_enabled: !settings.voice_enabled };
-                    handleSaveSettings(newSettings);
-                }}
-                onSettingsClick={() => setIsSettingsOpen(true)}
-                onToggleExpand={() => setIsMenuExpanded(!isMenuExpanded)}
+                onStreaksClick={handleStreaksClick}
+                onCaptureClick={handleCaptureClick}
+                onOutfitClick={handleOutfitClick}
+                onEraseClick={stableClearHistory}
+                onSpeakerClick={handleSpeakerClick}
+                onSettingsClick={handleSettingsClick}
+                onToggleExpand={handleToggleExpand}
             />
 
             {/* Bottom Input Bar */}

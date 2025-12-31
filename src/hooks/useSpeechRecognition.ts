@@ -51,10 +51,14 @@ interface SpeechRecognition extends EventTarget {
     onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
     onend: (() => void) | null;
     onstart: (() => void) | null;
+    onspeechend: (() => void) | null;
     start: () => void;
     stop: () => void;
     abort: () => void;
 }
+
+// Silence timeout in milliseconds - auto-stop after this much silence
+const SILENCE_TIMEOUT_MS = 1500;
 
 export function useSpeechRecognition(): SpeechRecognitionHook {
     const [isListening, setIsListening] = useState(false);
@@ -62,10 +66,32 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
     const [interimTranscript, setInterimTranscript] = useState('');
 
     const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const hasSpokenRef = useRef(false);
 
     // Check for browser support
     const isSupported = typeof window !== 'undefined' &&
         ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+
+    // Clear silence timeout
+    const clearSilenceTimeout = useCallback(() => {
+        if (silenceTimeoutRef.current) {
+            clearTimeout(silenceTimeoutRef.current);
+            silenceTimeoutRef.current = null;
+        }
+    }, []);
+
+    // Start silence timeout - will auto-stop if no speech detected
+    const startSilenceTimeout = useCallback(() => {
+        clearSilenceTimeout();
+        silenceTimeoutRef.current = setTimeout(() => {
+            // Only auto-stop if user has spoken something
+            if (hasSpokenRef.current && recognitionRef.current) {
+                console.log('[Speech] Silence detected, auto-stopping...');
+                recognitionRef.current.stop();
+            }
+        }, SILENCE_TIMEOUT_MS);
+    }, [clearSilenceTimeout]);
 
     // Initialize recognition
     useEffect(() => {
@@ -80,10 +106,20 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
 
         recognition.onstart = () => {
             setIsListening(true);
+            hasSpokenRef.current = false;
+            // Start initial silence timeout (in case user doesn't speak at all)
+            startSilenceTimeout();
         };
 
         recognition.onend = () => {
             setIsListening(false);
+            clearSilenceTimeout();
+        };
+
+        recognition.onspeechend = () => {
+            // Browser detected end of speech, start silence timeout
+            console.log('[Speech] Speech ended, starting silence timeout...');
+            startSilenceTimeout();
         };
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -94,8 +130,13 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
                 const result = event.results[i];
                 if (result.isFinal) {
                     finalTranscript += result[0].transcript;
+                    hasSpokenRef.current = true;
+                    // Reset silence timeout on final result
+                    startSilenceTimeout();
                 } else {
                     interimText += result[0].transcript;
+                    // Reset silence timeout on interim result too
+                    startSilenceTimeout();
                 }
             }
 
@@ -108,19 +149,22 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
             console.error('Speech recognition error:', event.error);
             setIsListening(false);
+            clearSilenceTimeout();
         };
 
         recognitionRef.current = recognition;
 
         return () => {
             recognition.abort();
+            clearSilenceTimeout();
         };
-    }, [isSupported]);
+    }, [isSupported, startSilenceTimeout, clearSilenceTimeout]);
 
     const startListening = useCallback(() => {
         if (recognitionRef.current && !isListening) {
             setTranscript('');
             setInterimTranscript('');
+            hasSpokenRef.current = false;
             try {
                 recognitionRef.current.start();
             } catch (e) {
@@ -132,8 +176,9 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
     const stopListening = useCallback(() => {
         if (recognitionRef.current && isListening) {
             recognitionRef.current.stop();
+            clearSilenceTimeout();
         }
-    }, [isListening]);
+    }, [isListening, clearSilenceTimeout]);
 
     const resetTranscript = useCallback(() => {
         setTranscript('');
@@ -150,3 +195,4 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
         resetTranscript,
     };
 }
+

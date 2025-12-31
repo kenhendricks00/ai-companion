@@ -23,9 +23,9 @@ export default function BottomInputBar({
     const [input, setInput] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Update input when transcript changes
+    // Update input when transcript changes (syncs both voice input and clearing)
     useEffect(() => {
-        if (transcript) {
+        if (typeof transcript === 'string') {
             setInput(transcript);
         }
     }, [transcript]);
@@ -35,6 +35,8 @@ export default function BottomInputBar({
         if (textToSend && !isLoading) {
             onSendMessage(textToSend);
             setInput('');
+            // Keep focus for continuous typing
+            inputRef.current?.focus();
         }
     };
 
@@ -71,12 +73,14 @@ export default function BottomInputBar({
             <input
                 ref={inputRef}
                 type="text"
+                autoFocus
                 value={displayText}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask Anything"
                 className="bottom-input-field"
-                disabled={isLoading}
+            // Don't disable input while loading, allow typing ahead
+            // disabled={isLoading} 
             />
 
             {/* Send/Text Button */}
