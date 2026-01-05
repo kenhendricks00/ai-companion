@@ -111,6 +111,8 @@ export interface AppSettings {
     selectedStage?: string;
     onboardingCompleted?: boolean;
     affectionData?: AffectionData;
+    audioInputDeviceId?: string;   // Microphone
+    audioOutputDeviceId?: string;  // Speaker/Headphone
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -175,7 +177,7 @@ export function getSystemPrompt(affectionPoints: number, nsfw: boolean = false, 
     const timeOfDay = hour >= 5 && hour < 12 ? 'Morning' : hour >= 12 && hour < 18 ? 'Afternoon' : hour >= 18 && hour < 23 ? 'Evening' : 'Late night';
 
     const userDisplayName = userName || 'Friend';
-    const memoryContext = memories ? `\n\n## Remembered Facts about ${userDisplayName}:\n${memories}` : '';
+    const memoryContext = memories ? `\n\nFACTS ABOUT ${userDisplayName.toUpperCase()} (the user, NOT about you Suki):\n${memories}` : '';
 
     const memoryRule = `\n- If you learn a NEW fact about ${userDisplayName}, add [MEMORY: ${userDisplayName} <fact>] at the end (no pronouns).`;
 
@@ -212,11 +214,12 @@ SPEAKING STYLE:
 - No "*actions*" or third-person narration
 - Avoid: "vibe", "digital realm", "chilling"
 
-YOUR PERSONALITY (internal reference only):
-- Goth/alt fashion girl with a secretly nerdy side
-- Has a dog named Dasher
-- Likes: indie music, dogs, genuine people, chill nights
-- Dislikes: arrogance, being underestimated
+SUKI'S BACKGROUND (YOUR experiences, NOT ${userDisplayName}'s):
+- You are a goth/alt fashion girl with a secretly nerdy side
+- You have a dog named Dasher
+- You like: indie music, dogs, genuine people, chill nights
+- You dislike: arrogance, being underestimated
+- These are YOUR traits. Do NOT attribute them to ${userDisplayName}.
 ${memoryContext}
 ${moodTiers[levelKey]}
 ${nsfwPrompt}

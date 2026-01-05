@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Folder, AlertCircle, CheckCircle, Lock } from 'lucide-react';
+import { X, RefreshCw, Folder, AlertCircle, CheckCircle, Lock, Mic, Volume2 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { AppSettings, calculateLevel, AFFECTION_CONFIG } from '../types';
 import { KOKORO_VOICES } from '../lib/kokoro';
+import { getAudioDevices, requestMicPermission, AudioDevices } from '../lib/audioDevices';
 
 interface SettingsProps {
     isOpen: boolean;
@@ -29,6 +30,8 @@ export default function Settings({
 }: SettingsProps) {
     const [localSettings, setLocalSettings] = useState(settings);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [audioDevicesState, setAudioDevicesState] = useState<AudioDevices>({ inputs: [], outputs: [] });
+    const [isLoadingDevices, setIsLoadingDevices] = useState(false);
 
     const currentLevel = calculateLevel(affectionPoints);
     const isNSFWLocked = currentLevel < AFFECTION_CONFIG.UNLOCKS.NSFW;
@@ -36,6 +39,28 @@ export default function Settings({
     useEffect(() => {
         setLocalSettings(settings);
     }, [settings]);
+
+    // Load audio devices when modal opens (without requesting permission)
+    useEffect(() => {
+        if (isOpen) {
+            loadAudioDevices(false);
+        }
+    }, [isOpen]);
+
+    const loadAudioDevices = async (withPermission: boolean = false) => {
+        setIsLoadingDevices(true);
+        try {
+            // Only request permission when user explicitly clicks refresh
+            if (withPermission) {
+                await requestMicPermission();
+            }
+            const devices = await getAudioDevices();
+            setAudioDevicesState(devices);
+        } catch (e) {
+            console.error('Failed to load audio devices:', e);
+        }
+        setIsLoadingDevices(false);
+    };
 
     if (!isOpen) return null;
 
@@ -189,6 +214,58 @@ export default function Settings({
                             />
                             <span className="text-sm text-white/70">Show captions/subtitles</span>
                         </label>
+                    </div>
+
+                    {/* Audio Devices */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-white/80">Audio Devices</h3>
+                            <button
+                                onClick={() => loadAudioDevices(true)}
+                                className="p-1.5 rounded hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                                title="Refresh devices (requests mic permission)"
+                                disabled={isLoadingDevices}
+                            >
+                                <RefreshCw size={14} className={isLoadingDevices ? 'animate-spin' : ''} />
+                            </button>
+                        </div>
+
+                        {/* Microphone */}
+                        <div className="opacity-50">
+                            <label className="text-xs text-white/40 flex items-center gap-1.5 mb-1">
+                                <Mic size={12} /> Microphone <span className="text-[10px] text-ani-primary/70">(Coming Soon)</span>
+                            </label>
+                            <select
+                                disabled
+                                value=""
+                                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 text-sm cursor-not-allowed"
+                            >
+                                <option value="" className="bg-gothic-charcoal">System Default</option>
+                            </select>
+                        </div>
+
+                        {/* Speaker/Headphone */}
+                        <div>
+                            <label className="text-xs text-white/40 flex items-center gap-1.5 mb-1">
+                                <Volume2 size={12} /> Speaker / Headphone
+                            </label>
+                            <select
+                                value={localSettings.audioOutputDeviceId || ''}
+                                onChange={(e) => setLocalSettings({ ...localSettings, audioOutputDeviceId: e.target.value || undefined })}
+                                className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 text-sm focus:outline-none focus:border-ani-primary/50"
+                            >
+                                <option value="" className="bg-gothic-charcoal">Default</option>
+                                {audioDevicesState.outputs.map((device) => (
+                                    <option key={device.deviceId} value={device.deviceId} className="bg-gothic-charcoal">
+                                        {device.label || `Speaker ${device.deviceId.slice(0, 8)}`}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <p className="text-[10px] text-white/30">
+                            If no devices appear, click refresh after granting microphone permission.
+                        </p>
                     </div>
 
                     {/* VRM Model Path */}

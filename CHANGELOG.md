@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-01-04
+
+### Added
+- **Settings**: Audio Output Device selection (Speakers/Headphones)
+- **Settings**: Microphone selection UI (with "Coming Soon" placeholder)
+- **UI**: Visual feedback during initial speech model loading ("Downloading... This happens once")
+
+### Fixed
+- **Persistence**: Fixed affection level and stats resetting on refresh by ensuring `affectionData` is correctly saved to `settings.json`
+- **Voice Mode**: Fixed issue where voice mode would fail to start or cause errors; reverted to stable native Web Speech API for reliability
+- **Stability**: Resolved syntax error in `useWhisper` hook (though currently unused in favor of native speech)
+
 ## [1.0.0] - 2024-12-30
 
 ### Added

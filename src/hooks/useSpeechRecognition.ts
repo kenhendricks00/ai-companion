@@ -162,14 +162,17 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
 
     const startListening = useCallback(() => {
         if (recognitionRef.current && !isListening) {
+            console.log('[Speech] Starting recognition...');
             setTranscript('');
             setInterimTranscript('');
             hasSpokenRef.current = false;
             try {
                 recognitionRef.current.start();
             } catch (e) {
-                console.error('Failed to start recognition:', e);
+                console.error('[Speech] Failed to start recognition:', e);
             }
+        } else {
+            console.log('[Speech] Start skipped: already listening or no recognition instance');
         }
     }, [isListening]);
 

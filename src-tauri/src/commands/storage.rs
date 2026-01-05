@@ -50,6 +50,8 @@ pub struct AppSettings {
     pub selected_hair_color: Option<String>,
     #[serde(default)]
     pub captions_enabled: Option<bool>,
+    #[serde(default, rename = "affectionData")]
+    pub affection_data: Option<AffectionData>,
 }
 
 impl Default for AppSettings {
@@ -67,6 +69,7 @@ impl Default for AppSettings {
             selected_stage: None,
             selected_hair_color: None,
             captions_enabled: Some(true),
+            affection_data: None,
         }
     }
 }

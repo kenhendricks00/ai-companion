@@ -228,6 +228,11 @@ export default function App() {
                 if (finalSettings.selectedStage) setSelectedStage(finalSettings.selectedStage);
                 if (finalSettings.selectedHairColor) setSelectedHairColor(finalSettings.selectedHairColor);
 
+                // Apply saved audio output device
+                if (finalSettings.audioOutputDeviceId) {
+                    kokoroService.setOutputDevice(finalSettings.audioOutputDeviceId);
+                }
+
                 // Ensure VRM matches outfit if no custom path override
                 if (!finalSettings.vrm_model_path && finalSettings.selectedOutfit) {
                     const outfit = OUTFITS.find(o => o.id === finalSettings.selectedOutfit);
@@ -284,6 +289,9 @@ export default function App() {
             setSettings(newSettings);
             setCurrentModel(newSettings.ollama_model);
             setCurrentVoice(newSettings.voice_id);
+
+            // Apply audio output device
+            kokoroService.setOutputDevice(newSettings.audioOutputDeviceId || null);
 
             if (newSettings.vrm_model_path) {
                 setVrmUrl(newSettings.vrm_model_path);

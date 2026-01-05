@@ -33,6 +33,17 @@ class KokoroService {
     private isPaused = false;
     private pauseResolve: (() => void) | null = null;
     private streamDestination: MediaStreamAudioDestinationNode | null = null;
+    private outputDeviceId: string | null = null;
+    private audioElement: HTMLAudioElement | null = null;
+
+    /**
+     * Set the output device (speaker/headphone) to use for audio playback
+     * @param deviceId - The device ID from navigator.mediaDevices.enumerateDevices()
+     */
+    async setOutputDevice(deviceId: string | null) {
+        this.outputDeviceId = deviceId;
+        console.log('[Kokoro] Output device set to:', deviceId || 'default');
+    }
 
     async initialize() {
         if (this.tts) return this.tts;
@@ -229,25 +240,73 @@ class KokoroService {
         }
     }
 
-    private playAudioBuffer(buffer: AudioBuffer, onEnded: () => void) {
+    private async playAudioBuffer(buffer: AudioBuffer, onEnded: () => void): Promise<void> {
+        if (!this.audioContext) {
+            onEnded();
+            return;
+        }
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+        }
+
+        // Ensure destination exists
+        if (!this.streamDestination) {
+            this.streamDestination = this.audioContext.createMediaStreamDestination();
+        }
+
+        // If custom output device is set, use Audio element with setSinkId
+        if (this.outputDeviceId) {
+            try {
+                // Convert AudioBuffer to WAV blob
+                const wavBlob = this.audioBufferToWav(buffer);
+                const audioUrl = URL.createObjectURL(wavBlob);
+
+                // Create or reuse audio element
+                if (!this.audioElement) {
+                    this.audioElement = new Audio();
+                }
+
+                this.audioElement.src = audioUrl;
+
+                // Set the output device
+                if ('setSinkId' in this.audioElement) {
+                    await (this.audioElement as any).setSinkId(this.outputDeviceId);
+                }
+
+                return new Promise<void>((resolve) => {
+                    this.audioElement!.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        onEnded();
+                        resolve();
+                    };
+
+                    this.audioElement!.onerror = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        console.error('[Kokoro] Audio element playback error');
+                        onEnded();
+                        resolve();
+                    };
+
+                    this.audioElement!.play().catch((e) => {
+                        console.error('[Kokoro] Audio play error:', e);
+                        URL.revokeObjectURL(audioUrl);
+                        onEnded();
+                        resolve();
+                    });
+                });
+            } catch (e) {
+                console.warn('[Kokoro] Failed to use custom output device, falling back to default:', e);
+            }
+        }
+
+        // Default: use AudioContext destination
         return new Promise<void>((resolve) => {
-            if (!this.audioContext) {
-                onEnded();
-                return resolve();
-            }
-            if (this.audioContext.state === 'suspended') this.audioContext.resume();
-
-            // Ensure destination exists
-            if (!this.streamDestination) {
-                this.streamDestination = this.audioContext.createMediaStreamDestination();
-            }
-
-            const source = this.audioContext.createBufferSource();
+            const source = this.audioContext!.createBufferSource();
             source.buffer = buffer;
             // Connect to speakers
-            source.connect(this.audioContext.destination);
+            source.connect(this.audioContext!.destination);
             // Connect to stream destination (for recording)
-            source.connect(this.streamDestination);
+            source.connect(this.streamDestination!);
 
             this.currentSource = source;
 
@@ -258,6 +317,57 @@ class KokoroService {
 
             source.start();
         });
+    }
+
+    /**
+     * Convert AudioBuffer to WAV blob for Audio element playback
+     */
+    private audioBufferToWav(buffer: AudioBuffer): Blob {
+        const numChannels = buffer.numberOfChannels;
+        const sampleRate = buffer.sampleRate;
+        const format = 1; // PCM
+        const bitsPerSample = 16;
+
+        const bytesPerSample = bitsPerSample / 8;
+        const blockAlign = numChannels * bytesPerSample;
+
+        const samples = buffer.getChannelData(0);
+        const dataLength = samples.length * bytesPerSample;
+        const bufferLength = 44 + dataLength;
+
+        const arrayBuffer = new ArrayBuffer(bufferLength);
+        const view = new DataView(arrayBuffer);
+
+        // WAV header
+        const writeString = (offset: number, str: string) => {
+            for (let i = 0; i < str.length; i++) {
+                view.setUint8(offset + i, str.charCodeAt(i));
+            }
+        };
+
+        writeString(0, 'RIFF');
+        view.setUint32(4, bufferLength - 8, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true); // fmt chunk size
+        view.setUint16(20, format, true);
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * blockAlign, true);
+        view.setUint16(32, blockAlign, true);
+        view.setUint16(34, bitsPerSample, true);
+        writeString(36, 'data');
+        view.setUint32(40, dataLength, true);
+
+        // Write audio data
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++) {
+            const s = Math.max(-1, Math.min(1, samples[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            offset += 2;
+        }
+
+        return new Blob([arrayBuffer], { type: 'audio/wav' });
     }
 
     /**
